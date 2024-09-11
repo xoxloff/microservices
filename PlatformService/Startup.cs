@@ -19,9 +19,20 @@ namespace PlatformService
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<AppDbContext>(opt=>opt.UseInMemoryDatabase("InMem"));
-            services.AddScoped<IPlatformRepo,PlatformRepo>();
-            services.AddHttpClient<ICommandDataClient,HttpCommandDataClient>();
+            if (_env.IsProduction())
+            {
+                Console.WriteLine("--> Using SqlServer Db");
+                services.AddDbContext<AppDbContext>(opt =>
+                    opt.UseSqlServer(Configuration.GetConnectionString("PlatformsConn"))
+                );
+            }
+            else
+            {
+                Console.WriteLine("--> Using InMem Db");
+                services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMem"));
+            }
+            services.AddScoped<IPlatformRepo, PlatformRepo>();
+            services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
             services.AddControllers();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddSwaggerGen(c =>
@@ -56,7 +67,7 @@ namespace PlatformService
                 });
             });
 
-            PrepDb.PrepPopulation(app);
+            PrepDb.PrepPopulation(app, env.IsProduction());
         }
     }
 }
