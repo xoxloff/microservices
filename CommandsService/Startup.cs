@@ -1,9 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using PlatformService.Data;
-using PlatformService.SyncDataServices.Http;
 
-namespace PlatformService
+namespace CommandsService
 {
     public class Startup
     {
@@ -19,17 +17,12 @@ namespace PlatformService
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<AppDbContext>(opt=>opt.UseInMemoryDatabase("InMem"));
-            services.AddScoped<IPlatformRepo,PlatformRepo>();
-            services.AddHttpClient<ICommandDataClient,HttpCommandDataClient>();
             services.AddControllers();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "PlatformService", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "CommandsService", Version = "v1" });
             });
-
-            Console.WriteLine($"--> CommandsService Endpoint {Configuration["CommandsService"]}");
         }
 
 
@@ -39,7 +32,7 @@ namespace PlatformService
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "PlatformService v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CommandsService v1"));
             }
 
             app.UseRouting();
@@ -50,13 +43,11 @@ namespace PlatformService
             {
                 endpoints.MapControllers();
 
-                endpoints.MapGet("/protos/platforms.proto", async context =>
+                endpoints.MapGet("/protos/commands.proto", async context =>
                 {
-                    await context.Response.WriteAsync(File.ReadAllText("Protos/platforms.proto"));
+                    await context.Response.WriteAsync(File.ReadAllText("Protos/commands.proto"));
                 });
             });
-
-            PrepDb.PrepPopulation(app);
         }
     }
 }
