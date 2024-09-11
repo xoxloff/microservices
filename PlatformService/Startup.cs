@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using PlatformService.Data;
 
 namespace PlatformService
 {
@@ -16,6 +18,8 @@ namespace PlatformService
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<AppDbContext>(opt=>opt.UseInMemoryDatabase("InMem"));
+            services.AddScoped<IPlatformRepo,PlatformRepo>();
             services.AddControllers();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddSwaggerGen(c =>
@@ -47,6 +51,8 @@ namespace PlatformService
                     await context.Response.WriteAsync(File.ReadAllText("Protos/platforms.proto"));
                 });
             });
+
+            PrepDb.PrepPopulation(app);
         }
     }
 }
